@@ -4,30 +4,39 @@ export async function GET() {
   try {
     const [goldRes, silverRes] = await Promise.all([
       fetch(
-        "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD"
+        "https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=2d"
       ),
       fetch(
-        "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAG/USD"
+        "https://query1.finance.yahoo.com/v8/finance/chart/SI=F?interval=1d&range=2d"
       ),
     ]);
 
     const goldData = await goldRes.json();
     const silverData = await silverRes.json();
 
-    const goldPrice = goldData[0]?.spreadProfilePrices?.[0];
-    const silverPrice = silverData[0]?.spreadProfilePrices?.[0];
+    const gm = goldData.chart?.result?.[0]?.meta;
+    const sm = silverData.chart?.result?.[0]?.meta;
 
-    const goldMid = goldPrice
-      ? ((goldPrice.bid + goldPrice.ask) / 2).toFixed(2)
-      : null;
-    const silverMid = silverPrice
-      ? ((silverPrice.bid + silverPrice.ask) / 2).toFixed(2)
-      : null;
+    function buildPrice(meta: Record<string, number> | undefined) {
+      if (!meta?.regularMarketPrice) return null;
+      const price = meta.regularMarketPrice;
+      const prevClose = meta.chartPreviousClose || 0;
+      const change = prevClose ? price - prevClose : 0;
+      const changePercent = prevClose ? (change / prevClose) * 100 : 0;
+      return {
+        price: price.toFixed(2),
+        prevClose: prevClose.toFixed(2),
+        change: change.toFixed(2),
+        changePercent: changePercent.toFixed(2),
+        high: meta.regularMarketDayHigh?.toFixed(2) || null,
+        low: meta.regularMarketDayLow?.toFixed(2) || null,
+      };
+    }
 
     return Response.json({
-      gold: goldMid ? { price: goldMid } : null,
-      silver: silverMid ? { price: silverMid } : null,
-      source: "swissquote",
+      gold: buildPrice(gm),
+      silver: buildPrice(sm),
+      source: "yahoo",
       timestamp: new Date().toISOString(),
     });
   } catch {
