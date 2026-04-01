@@ -87,3 +87,19 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const apiSecret = request.headers.get("x-api-secret");
+  if (apiSecret !== process.env.API_SECRET) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const searchParams = request.nextUrl.searchParams;
+  const id = searchParams.get("id");
+  if (!id) {
+    return Response.json({ error: "Missing id" }, { status: 400 });
+  }
+
+  await prisma.article.delete({ where: { id: parseInt(id) } });
+  return Response.json({ success: true });
+}
