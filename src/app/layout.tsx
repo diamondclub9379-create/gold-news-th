@@ -1,0 +1,44 @@
+import type { Metadata } from "next";
+import { Noto_Sans_Thai } from "next/font/google";
+import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+
+const notoSansThai = Noto_Sans_Thai({
+  variable: "--font-noto-thai",
+  subsets: ["thai", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Gold News TH - ข่าวทองคำเงินจากต่างประเทศ",
+    template: "%s | Gold News TH",
+  },
+  description:
+    "ข่าวทองคำและเงินจากต่างประเทศ แปลเป็นภาษาไทยอัตโนมัติ อัพเดททุก 2 ชั่วโมง",
+  keywords: [
+    "ข่าวทองคำ",
+    "ราคาทอง",
+    "gold news",
+    "silver news",
+    "ข่าวเงิน",
+    "ตลาดทอง",
+  ],
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="th" className={`${notoSansThai.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-gray-950 text-gray-100 font-[family-name:var(--font-noto-thai)]">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}

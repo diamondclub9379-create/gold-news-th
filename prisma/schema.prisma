@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Article {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  titleEn     String
+  titleTh     String
+  summaryEn   String
+  summaryTh   String
+  bodyTh      String
+  sourceUrl   String   @unique
+  sourceName  String
+  category    String   // gold, silver
+  imageUrl    String?
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+  @@index([publishedAt])
+}
