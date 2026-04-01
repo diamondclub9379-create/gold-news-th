@@ -1,0 +1,16 @@
+name: Fetch Gold News
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and translate news
+        run: |
+          curl -s -X POST "https://gold-news-th.vercel.app/api/fetch-news" \
+            -H "x-api-secret: ${{ secrets.API_SECRET }}" \
+            -H "Content-Type: application/json"
