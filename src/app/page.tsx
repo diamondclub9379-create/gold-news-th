@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import ArticleCard from "@/components/ArticleCard";
 import CategoryFilter from "@/components/CategoryFilter";
+import PriceTicker from "@/components/PriceTicker";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,11 @@ export default async function Home() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Price Ticker */}
+      <section className="mb-8">
+        <PriceTicker />
+      </section>
+
       {/* Hero / Featured Article */}
       {featured && (
         <section className="mb-10">

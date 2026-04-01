@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import BrokerCTA from "@/components/BrokerCTA";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -100,6 +101,8 @@ export default async function NewsPage({ params }: Props) {
           </p>
         ))}
       </div>
+
+      <BrokerCTA />
 
       {/* Source */}
       <div className="mt-10 pt-6 border-t border-gray-800/60">
