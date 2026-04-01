@@ -5,9 +5,26 @@ const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 const RSS_URL =
   "https://news.google.com/rss/search?q=gold+price+OR+silver+price+precious+metals&hl=en-US&gl=US&ceid=US:en";
 
+function isAuthorized(request: NextRequest): boolean {
+  // Vercel Cron sends Authorization: Bearer <CRON_SECRET>
+  const authHeader = request.headers.get("authorization");
+  if (process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`) {
+    return true;
+  }
+  // Manual trigger via x-api-secret
+  return request.headers.get("x-api-secret") === process.env.API_SECRET;
+}
+
+export async function GET(request: NextRequest) {
+  return handleFetchNews(request);
+}
+
 export async function POST(request: NextRequest) {
-  const apiSecret = request.headers.get("x-api-secret");
-  if (apiSecret !== process.env.API_SECRET) {
+  return handleFetchNews(request);
+}
+
+async function handleFetchNews(request: NextRequest) {
+  if (!isAuthorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
