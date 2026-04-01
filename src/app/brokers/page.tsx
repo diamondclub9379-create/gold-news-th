@@ -24,6 +24,22 @@ const brokers = [
     href: "https://one.exnessonelink.com/a/tgeiigei",
     color: "from-yellow-500 to-amber-600",
   },
+  {
+    name: "XM",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/XM_Logo.svg/512px-XM_Logo.svg.png",
+    description:
+      "Broker ระดับโลกที่ได้รับความนิยมสูง มีโบนัสต้อนรับ สเปรดต่ำ ซัพพอร์ตไทย 24/5 เหมาะกับทั้งมือใหม่และมืออาชีพ",
+    features: [
+      "โบนัสต้อนรับสมาชิกใหม่",
+      "สเปรดเริ่มต้น 0.6 pips",
+      "Leverage สูงสุด 1:1000",
+      "รองรับ MT4, MT5",
+      "มีใบอนุญาต CySEC, ASIC, IFSC",
+    ],
+    highlight: "โบนัสเยอะที่สุด",
+    href: "https://www.xmglobal.com/referral?token=zC0C_t2IhcQtzCOb6Te7xA",
+    color: "from-red-500 to-red-600",
+  },
 ];
 
 export default function BrokersPage() {
