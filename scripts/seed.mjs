@@ -1,5 +1,5 @@
-const API_URL = "http://localhost:3001/api/articles";
-const API_SECRET = "change-this-to-a-random-secret";
+const API_URL = process.env.API_URL || "http://localhost:3001/api/articles";
+const API_SECRET = process.env.API_SECRET || "change-this-to-a-random-secret";
 
 const articles = [
   {
