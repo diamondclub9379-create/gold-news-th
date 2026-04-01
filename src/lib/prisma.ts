@@ -4,7 +4,9 @@ import { PrismaLibSql } from "@prisma/adapter-libsql";
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
-  const url = process.env.TURSO_DATABASE_URL || `file:${process.cwd()}/dev.db`;
+  const isProduction = process.env.NODE_ENV === "production";
+  const url = process.env.TURSO_DATABASE_URL || (isProduction ? undefined : `file:${process.cwd()}/dev.db`);
+  if (!url) throw new Error("TURSO_DATABASE_URL is required in production");
   const authToken = process.env.TURSO_AUTH_TOKEN;
   const adapter = new PrismaLibSql({ url, authToken });
   return new PrismaClient({ adapter });
