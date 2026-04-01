@@ -2,8 +2,17 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
-const RSS_URL =
-  "https://news.google.com/rss/search?q=gold+price+OR+silver+price+precious+metals&hl=en-US&gl=US&ceid=US:en";
+
+const RSS_FEEDS = [
+  {
+    url: "https://news.google.com/rss/search?q=gold+price+OR+silver+price+precious+metals&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "Google News",
+  },
+  {
+    url: "https://www.forexfactory.com/rss",
+    defaultSource: "Forex Factory",
+  },
+];
 
 function isAuthorized(request: NextRequest): boolean {
   // Vercel Cron sends Authorization: Bearer <CRON_SECRET>
@@ -33,10 +42,23 @@ async function handleFetchNews(request: NextRequest) {
   }
 
   try {
-    // 1. Fetch RSS
-    const rssRes = await fetch(RSS_URL);
-    const rssText = await rssRes.text();
-    const items = parseRSS(rssText);
+    // 1. Fetch all RSS feeds
+    const allItems = [];
+    for (const feed of RSS_FEEDS) {
+      try {
+        const rssRes = await fetch(feed.url, {
+          headers: { "User-Agent": "GoldNewsTH/1.0" },
+        });
+        if (rssRes.ok) {
+          const rssText = await rssRes.text();
+          const items = parseRSS(rssText, feed.defaultSource);
+          allItems.push(...items);
+        }
+      } catch {
+        // Skip failed feeds silently
+      }
+    }
+    const items = allItems;
 
     // 2. Get existing source URLs to deduplicate
     const existing = await prisma.article.findMany({
@@ -97,7 +119,7 @@ async function handleFetchNews(request: NextRequest) {
   }
 }
 
-function parseRSS(xml: string) {
+function parseRSS(xml: string, defaultSource: string) {
   const items: Array<{
     title: string;
     link: string;
@@ -120,7 +142,7 @@ function parseRSS(xml: string) {
 
     // Google News titles often have " - SourceName" at the end
     const parts = title.split(" - ");
-    const sourceName = parts.length > 1 ? parts[parts.length - 1].trim() : source || "Google News";
+    const sourceName = parts.length > 1 ? parts[parts.length - 1].trim() : source || defaultSource;
     const cleanTitle = parts.length > 1 ? parts.slice(0, -1).join(" - ").trim() : title;
 
     const text = (cleanTitle + " " + (description || "")).toLowerCase();
