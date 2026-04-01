@@ -40,6 +40,12 @@ export default function Header() {
             >
               เงิน
             </Link>
+            <Link
+              href="/brokers"
+              className="px-3 py-1.5 rounded-lg text-sm text-yellow-300/80 hover:text-yellow-100 hover:bg-yellow-500/10 transition-all"
+            >
+              Brokers
+            </Link>
           </nav>
         </div>
       </div>
