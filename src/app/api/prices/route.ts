@@ -2,39 +2,40 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    // Try metals.dev API
-    const res = await fetch(
-      "https://api.metals.dev/v1/latest?api_key=demo&currency=USD&unit=toz",
-      { next: { revalidate: 60 } }
-    );
+    const [goldRes, silverRes] = await Promise.all([
+      fetch(
+        "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD"
+      ),
+      fetch(
+        "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAG/USD"
+      ),
+    ]);
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.metals) {
-        return Response.json({
-          gold: {
-            price: data.metals.gold?.toFixed(2) || null,
-            change: "",
-            changePercent: "",
-          },
-          silver: {
-            price: data.metals.silver?.toFixed(2) || null,
-            change: "",
-            changePercent: "",
-          },
-          source: "metals.dev",
-          timestamp: new Date().toISOString(),
-        });
-      }
-    }
+    const goldData = await goldRes.json();
+    const silverData = await silverRes.json();
+
+    const goldPrice = goldData[0]?.spreadProfilePrices?.[0];
+    const silverPrice = silverData[0]?.spreadProfilePrices?.[0];
+
+    const goldMid = goldPrice
+      ? ((goldPrice.bid + goldPrice.ask) / 2).toFixed(2)
+      : null;
+    const silverMid = silverPrice
+      ? ((silverPrice.bid + silverPrice.ask) / 2).toFixed(2)
+      : null;
+
+    return Response.json({
+      gold: goldMid ? { price: goldMid } : null,
+      silver: silverMid ? { price: silverMid } : null,
+      source: "swissquote",
+      timestamp: new Date().toISOString(),
+    });
   } catch {
-    // fallback
+    return Response.json({
+      gold: null,
+      silver: null,
+      source: "unavailable",
+      timestamp: new Date().toISOString(),
+    });
   }
-
-  return Response.json({
-    gold: null,
-    silver: null,
-    source: "unavailable",
-    timestamp: new Date().toISOString(),
-  });
 }

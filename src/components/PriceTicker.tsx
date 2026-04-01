@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 interface PriceData {
-  gold: { price: string; change: string; changePercent: string } | null;
-  silver: { price: string; change: string; changePercent: string } | null;
+  gold: { price: string } | null;
+  silver: { price: string } | null;
 }
 
 export default function PriceTicker() {
@@ -17,59 +17,27 @@ export default function PriceTicker() {
   useEffect(() => {
     async function fetchPrices() {
       try {
-        // Use metals.dev free API
-        const res = await fetch(
-          "https://api.metals.dev/v1/latest?api_key=demo&currency=USD&unit=toz"
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (data.metals) {
-            setPrices({
-              gold: {
-                price: data.metals.gold?.toFixed(2) || "—",
-                change: "",
-                changePercent: "",
-              },
-              silver: {
-                price: data.metals.silver?.toFixed(2) || "—",
-                change: "",
-                changePercent: "",
-              },
-            });
-            setLoading(false);
-            return;
-          }
-        }
-      } catch {
-        // fallback
-      }
-
-      // Fallback: use goldapi.io or show placeholder
-      try {
         const res = await fetch("/api/prices");
         if (res.ok) {
           const data = await res.json();
           setPrices(data);
-          setLoading(false);
-          return;
         }
       } catch {
         // ignore
       }
-
       setLoading(false);
     }
 
     fetchPrices();
-    const interval = setInterval(fetchPrices, 60000); // refresh every minute
+    const interval = setInterval(fetchPrices, 30000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) {
     return (
-      <div className="flex gap-4 animate-pulse">
-        <div className="h-16 bg-gray-800/50 rounded-xl flex-1" />
-        <div className="h-16 bg-gray-800/50 rounded-xl flex-1" />
+      <div className="grid grid-cols-2 gap-3 animate-pulse">
+        <div className="h-20 bg-gray-800/50 rounded-xl" />
+        <div className="h-20 bg-gray-800/50 rounded-xl" />
       </div>
     );
   }
@@ -81,8 +49,6 @@ export default function PriceTicker() {
         symbol="XAU/USD"
         icon="Au"
         price={prices.gold?.price}
-        change={prices.gold?.change}
-        changePercent={prices.gold?.changePercent}
         color="yellow"
       />
       <PriceCard
@@ -90,8 +56,6 @@ export default function PriceTicker() {
         symbol="XAG/USD"
         icon="Ag"
         price={prices.silver?.price}
-        change={prices.silver?.change}
-        changePercent={prices.silver?.changePercent}
         color="gray"
       />
     </div>
@@ -103,26 +67,14 @@ function PriceCard({
   symbol,
   icon,
   price,
-  change,
-  changePercent,
   color,
 }: {
   label: string;
   symbol: string;
   icon: string;
   price?: string;
-  change?: string;
-  changePercent?: string;
   color: "yellow" | "gray";
 }) {
-  const isUp = change && !change.startsWith("-");
-  const isDown = change && change.startsWith("-");
-  const changeColor = isUp
-    ? "text-green-400"
-    : isDown
-      ? "text-red-400"
-      : "text-gray-500";
-
   const borderColor =
     color === "yellow"
       ? "border-yellow-700/30 from-yellow-950/20"
@@ -149,16 +101,10 @@ function PriceCard({
         </div>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="text-xl font-bold text-gray-50">
-          ${price || "—"}
+        <span className="text-2xl font-bold text-gray-50">
+          {price ? `$${Number(price).toLocaleString()}` : "$—"}
         </span>
-        {change && (
-          <span className={`text-xs font-medium ${changeColor}`}>
-            {isUp ? "+" : ""}
-            {change}
-            {changePercent ? ` (${isUp ? "+" : ""}${changePercent}%)` : ""}
-          </span>
-        )}
+        <span className="text-[10px] text-gray-600">USD/oz</span>
       </div>
     </div>
   );
