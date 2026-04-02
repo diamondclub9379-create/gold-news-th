@@ -90,7 +90,7 @@ async function handleFetchNews(request: NextRequest) {
           "-" +
           Date.now().toString(36);
 
-        const imageUrl = await fetchOgImage(item.link);
+        const imageUrl = await fetchOgImage(item.link, item.category);
 
         const article = await prisma.article.create({
           data: {
@@ -169,28 +169,53 @@ function extractTag(xml: string, tag: string): string {
   return match ? match[1].trim() : "";
 }
 
-async function fetchOgImage(url: string): Promise<string | null> {
+// Curated gold/silver stock images from Unsplash (free to use)
+const GOLD_IMAGES = [
+  "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1624365168968-f283d506c6b6?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1589787168422-9c4b7a32e5f2?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1638435029519-de6eb66e0657?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=450&fit=crop&q=90",
+];
+const SILVER_IMAGES = [
+  "https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1574607383476-f517f260d30b?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1589787168422-9c4b7a32e5f2?w=800&h=450&fit=crop&sat=-100",
+  "https://images.unsplash.com/photo-1605792657660-596af9009e82?w=800&h=450&fit=crop",
+];
+
+async function fetchOgImage(url: string, category: string): Promise<string | null> {
+  // First try to get the real OG image from the source
   try {
-    // Google News links redirect — follow them
     const res = await fetch(url, {
-      headers: { "User-Agent": "GoldNewsTH/1.0" },
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; GoldNewsTH/1.0)" },
       redirect: "follow",
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return null;
-    const html = await res.text();
-    // Try og:image first, then twitter:image
-    const ogMatch = html.match(
-      /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i
-    ) || html.match(
-      /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i
-    ) || html.match(
-      /<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i
-    );
-    return ogMatch?.[1] || null;
+    if (res.ok) {
+      const html = await res.text();
+      const ogMatch = html.match(
+        /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i
+      ) || html.match(
+        /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i
+      ) || html.match(
+        /<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i
+      );
+      const img = ogMatch?.[1];
+      // Skip Google News logo and other generic images
+      if (img && !img.includes("lh3.googleusercontent.com") && !img.includes("google.com/")) {
+        return img;
+      }
+    }
   } catch {
-    return null;
+    // Fall through to stock images
   }
+
+  // Fallback: pick a stock image based on category + article id hash
+  const pool = category === "silver" ? SILVER_IMAGES : GOLD_IMAGES;
+  const idx = Math.floor(Math.random() * pool.length);
+  return pool[idx];
 }
 
 async function translateWithClaude(
