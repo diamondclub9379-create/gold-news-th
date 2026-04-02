@@ -15,12 +15,10 @@ const RSS_FEEDS = [
 ];
 
 function isAuthorized(request: NextRequest): boolean {
-  // Vercel Cron sends Authorization: Bearer <CRON_SECRET>
   const authHeader = request.headers.get("authorization");
   if (process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`) {
     return true;
   }
-  // Manual trigger via x-api-secret
   return request.headers.get("x-api-secret") === process.env.API_SECRET;
 }
 
@@ -58,7 +56,6 @@ async function handleFetchNews(request: NextRequest) {
         // Skip failed feeds silently
       }
     }
-    const items = allItems;
 
     // 2. Get existing source URLs to deduplicate
     const existing = await prisma.article.findMany({
@@ -67,7 +64,7 @@ async function handleFetchNews(request: NextRequest) {
     const existingUrls = new Set(existing.map((a) => a.sourceUrl));
 
     // 3. Filter new items
-    const newItems = items
+    const newItems = allItems
       .filter((item) => item.link && !existingUrls.has(item.link))
       .slice(0, 5);
 
@@ -75,11 +72,18 @@ async function handleFetchNews(request: NextRequest) {
       return Response.json({ message: "No new articles", count: 0 });
     }
 
-    // 4. Translate and save each
+    // 4. Fetch full article, translate, and save
     const results = [];
     for (const item of newItems) {
       try {
-        const translated = await translateWithClaude(item.title, item.summary);
+        // Fetch full article content from source
+        const scraped = await scrapeArticle(item.link);
+        const articleText = scraped.text || item.summary;
+        const imageUrl = scraped.ogImage || pickStockImage(item.category);
+        const finalUrl = scraped.finalUrl || item.link;
+
+        // Translate full article with Claude
+        const translated = await translateWithClaude(item.title, articleText);
 
         const slug =
           item.title
@@ -90,8 +94,6 @@ async function handleFetchNews(request: NextRequest) {
           "-" +
           Date.now().toString(36);
 
-        const imageUrl = await fetchOgImage(item.link, item.category);
-
         const article = await prisma.article.create({
           data: {
             slug,
@@ -100,7 +102,7 @@ async function handleFetchNews(request: NextRequest) {
             summaryEn: item.summary,
             summaryTh: translated.summaryTh,
             bodyTh: translated.bodyTh,
-            sourceUrl: item.link,
+            sourceUrl: finalUrl,
             sourceName: item.sourceName,
             category: item.category,
             imageUrl,
@@ -121,6 +123,93 @@ async function handleFetchNews(request: NextRequest) {
     return Response.json({ error: msg }, { status: 500 });
   }
 }
+
+// ---- Scrape full article from source URL ----
+
+interface ScrapedArticle {
+  text: string;
+  ogImage: string | null;
+  finalUrl: string;
+}
+
+async function scrapeArticle(url: string): Promise<ScrapedArticle> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml",
+      },
+      redirect: "follow",
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!res.ok) return { text: "", ogImage: null, finalUrl: url };
+
+    const finalUrl = res.url; // After redirects
+    const html = await res.text();
+
+    // Extract OG image
+    const ogMatch =
+      html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i) ||
+      html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i);
+    let ogImage = ogMatch?.[1] || null;
+    if (ogImage?.includes("lh3.googleusercontent.com") || ogImage?.includes("google.com/")) {
+      ogImage = null;
+    }
+
+    // Extract article text
+    const text = extractArticleText(html);
+
+    return { text, ogImage, finalUrl };
+  } catch {
+    return { text: "", ogImage: null, finalUrl: url };
+  }
+}
+
+function extractArticleText(html: string): string {
+  // Remove script, style, nav, header, footer, aside tags
+  let cleaned = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<nav[\s\S]*?<\/nav>/gi, "")
+    .replace(/<header[\s\S]*?<\/header>/gi, "")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, "")
+    .replace(/<aside[\s\S]*?<\/aside>/gi, "")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
+
+  // Try to find <article> tag first
+  const articleMatch = cleaned.match(/<article[\s\S]*?>([\s\S]*?)<\/article>/i);
+  if (articleMatch) {
+    cleaned = articleMatch[1];
+  } else {
+    // Try common content containers
+    const contentMatch =
+      cleaned.match(/<div[^>]*class=["'][^"']*(?:article-body|article-content|post-content|entry-content|story-body|caas-body)[^"']*["'][^>]*>([\s\S]*?)<\/div>/i) ||
+      cleaned.match(/<main[\s\S]*?>([\s\S]*?)<\/main>/i);
+    if (contentMatch) {
+      cleaned = contentMatch[1];
+    }
+  }
+
+  // Strip remaining HTML tags and decode entities
+  const text = cleaned
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Return first 3000 chars to avoid token limits
+  return text.slice(0, 3000);
+}
+
+// ---- RSS Parsing ----
 
 function parseRSS(xml: string, defaultSource: string) {
   const items: Array<{
@@ -143,7 +232,6 @@ function parseRSS(xml: string, defaultSource: string) {
 
     if (!title || !link) continue;
 
-    // Google News titles often have " - SourceName" at the end
     const parts = title.split(" - ");
     const sourceName = parts.length > 1 ? parts[parts.length - 1].trim() : source || defaultSource;
     const cleanTitle = parts.length > 1 ? parts.slice(0, -1).join(" - ").trim() : title;
@@ -169,7 +257,8 @@ function extractTag(xml: string, tag: string): string {
   return match ? match[1].trim() : "";
 }
 
-// Curated gold/silver stock images from Unsplash (free to use)
+// ---- Stock Images ----
+
 const GOLD_IMAGES = [
   "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=450&fit=crop",
   "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=800&h=450&fit=crop",
@@ -185,42 +274,16 @@ const SILVER_IMAGES = [
   "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=450&fit=crop",
 ];
 
-async function fetchOgImage(url: string, category: string): Promise<string | null> {
-  // First try to get the real OG image from the source
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; GoldNewsTH/1.0)" },
-      redirect: "follow",
-      signal: AbortSignal.timeout(8000),
-    });
-    if (res.ok) {
-      const html = await res.text();
-      const ogMatch = html.match(
-        /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i
-      ) || html.match(
-        /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i
-      ) || html.match(
-        /<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i
-      );
-      const img = ogMatch?.[1];
-      // Skip Google News logo and other generic images
-      if (img && !img.includes("lh3.googleusercontent.com") && !img.includes("google.com/")) {
-        return img;
-      }
-    }
-  } catch {
-    // Fall through to stock images
-  }
-
-  // Fallback: pick a stock image based on category + article id hash
+function pickStockImage(category: string): string {
   const pool = category === "silver" ? SILVER_IMAGES : GOLD_IMAGES;
-  const idx = Math.floor(Math.random() * pool.length);
-  return pool[idx];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
+
+// ---- Translation ----
 
 async function translateWithClaude(
   titleEn: string,
-  summaryEn: string
+  articleText: string
 ): Promise<{ titleTh: string; summaryTh: string; bodyTh: string }> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -231,16 +294,24 @@ async function translateWithClaude(
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 2000,
+      max_tokens: 4000,
       messages: [
         {
           role: "user",
-          content: `Translate this gold/silver news to Thai. Reply ONLY with valid JSON, no markdown.
+          content: `You are a Thai financial news translator. Translate this gold/silver news article to Thai.
 
 Title: ${titleEn}
-Summary: ${summaryEn}
 
-JSON format: {"titleTh": "...", "summaryTh": "...", "bodyTh": "... 2-3 paragraphs separated by \\n"}`,
+Full article content:
+${articleText}
+
+Instructions:
+- titleTh: Translate the title to Thai, make it engaging for Thai readers
+- summaryTh: Write a 1-2 sentence summary in Thai
+- bodyTh: Translate the full article to Thai, 3-5 paragraphs separated by \\n\\n. Keep financial terms accurate. If the source text is short, expand with relevant context about the gold/silver market.
+
+Reply ONLY with valid JSON, no markdown:
+{"titleTh": "...", "summaryTh": "...", "bodyTh": "..."}`,
         },
       ],
     }),
