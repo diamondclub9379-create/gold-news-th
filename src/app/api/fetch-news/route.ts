@@ -90,6 +90,8 @@ async function handleFetchNews(request: NextRequest) {
           "-" +
           Date.now().toString(36);
 
+        const imageUrl = await fetchOgImage(item.link);
+
         const article = await prisma.article.create({
           data: {
             slug,
@@ -101,6 +103,7 @@ async function handleFetchNews(request: NextRequest) {
             sourceUrl: item.link,
             sourceName: item.sourceName,
             category: item.category,
+            imageUrl,
             publishedAt: new Date(item.publishedAt),
           },
         });
@@ -164,6 +167,30 @@ function parseRSS(xml: string, defaultSource: string) {
 function extractTag(xml: string, tag: string): string {
   const match = xml.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?</${tag}>`, "s"));
   return match ? match[1].trim() : "";
+}
+
+async function fetchOgImage(url: string): Promise<string | null> {
+  try {
+    // Google News links redirect — follow them
+    const res = await fetch(url, {
+      headers: { "User-Agent": "GoldNewsTH/1.0" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    // Try og:image first, then twitter:image
+    const ogMatch = html.match(
+      /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i
+    ) || html.match(
+      /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i
+    ) || html.match(
+      /<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i
+    );
+    return ogMatch?.[1] || null;
+  } catch {
+    return null;
+  }
 }
 
 async function translateWithClaude(
