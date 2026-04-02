@@ -1,4 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+
+function ArticleImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [error, setError] = useState(false);
+  if (error) return null;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setError(true)}
+      loading="lazy"
+    />
+  );
+}
 
 interface ArticleCardProps {
   slug: string;
@@ -42,7 +59,7 @@ export default function ArticleCard({
         <article className="relative bg-gradient-to-br from-gray-900 via-gray-900 to-yellow-950/30 border border-yellow-700/20 rounded-2xl overflow-hidden hover:border-yellow-600/40 transition-all duration-300 shadow-lg shadow-black/20">
           {imageUrl && (
             <div className="aspect-[21/9] bg-gray-800 overflow-hidden">
-              <img
+              <ArticleImage
                 src={imageUrl}
                 alt={titleTh}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

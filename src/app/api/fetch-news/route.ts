@@ -172,17 +172,17 @@ function extractTag(xml: string, tag: string): string {
 // Curated gold/silver stock images from Unsplash (free to use)
 const GOLD_IMAGES = [
   "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1624365168968-f283d506c6b6?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1589787168422-9c4b7a32e5f2?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1638435029519-de6eb66e0657?w=800&h=450&fit=crop",
   "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=450&fit=crop&q=90",
+  "https://images.unsplash.com/photo-1543699565-003b8adda5fc?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1516245834210-c4c142787335?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1498408040764-ab6eb772a145?w=800&h=450&fit=crop",
 ];
 const SILVER_IMAGES = [
   "https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=800&h=450&fit=crop",
   "https://images.unsplash.com/photo-1574607383476-f517f260d30b?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1589787168422-9c4b7a32e5f2?w=800&h=450&fit=crop&sat=-100",
   "https://images.unsplash.com/photo-1605792657660-596af9009e82?w=800&h=450&fit=crop",
+  "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=450&fit=crop",
 ];
 
 async function fetchOgImage(url: string, category: string): Promise<string | null> {
