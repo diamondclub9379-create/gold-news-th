@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
   const results = [];
   for (const article of articles) {
     const isGoogleLogo = article.imageUrl?.includes("lh3.googleusercontent.com") || article.imageUrl?.includes("google.com/");
-    if (article.imageUrl && !isGoogleLogo) {
+    const isBrokenUnsplash = article.imageUrl?.includes("unsplash.com/photo-1624365168968") || article.imageUrl?.includes("unsplash.com/photo-1589787168422") || article.imageUrl?.includes("unsplash.com/photo-1638435029519");
+    if (article.imageUrl && !isGoogleLogo && !isBrokenUnsplash) {
       results.push({ id: article.id, status: "kept" });
       continue;
     }
