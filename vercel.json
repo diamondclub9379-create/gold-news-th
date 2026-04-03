@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/fetch-youtube",
-      "schedule": "23 */3 * * *"
+      "schedule": "23 7 * * *"
     }
   ]
 }
