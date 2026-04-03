@@ -41,6 +41,12 @@ export default function Header() {
               เงิน
             </Link>
             <Link
+              href="/videos"
+              className="px-3 py-1.5 rounded-lg text-sm text-yellow-300/80 hover:text-yellow-100 hover:bg-yellow-500/10 transition-all"
+            >
+              วิดีโอ
+            </Link>
+            <Link
               href="/learn"
               className="px-3 py-1.5 rounded-lg text-sm text-yellow-300/80 hover:text-yellow-100 hover:bg-yellow-500/10 transition-all"
             >

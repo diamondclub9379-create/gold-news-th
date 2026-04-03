@@ -25,3 +25,16 @@ model Article {
   @@index([category])
   @@index([publishedAt])
 }
+
+model Video {
+  id          Int      @id @default(autoincrement())
+  videoId     String   @unique // YouTube video ID
+  title       String
+  description String
+  thumbnailUrl String
+  channelTitle String
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([publishedAt])
+}

@@ -3,6 +3,10 @@
     {
       "path": "/api/fetch-news",
       "schedule": "7 6 * * *"
+    },
+    {
+      "path": "/api/fetch-youtube",
+      "schedule": "23 */3 * * *"
     }
   ]
 }

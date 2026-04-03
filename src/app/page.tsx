@@ -2,14 +2,22 @@ import { prisma } from "@/lib/prisma";
 import ArticleCard from "@/components/ArticleCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import PriceTicker from "@/components/PriceTicker";
+import VideoCard from "@/components/VideoCard";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const articles = await prisma.article.findMany({
-    orderBy: { publishedAt: "desc" },
-    take: 20,
-  });
+  const [articles, latestVideos] = await Promise.all([
+    prisma.article.findMany({
+      orderBy: { publishedAt: "desc" },
+      take: 20,
+    }),
+    prisma.video.findMany({
+      orderBy: { publishedAt: "desc" },
+      take: 3,
+    }),
+  ]);
 
   const [featured, ...rest] = articles;
 
@@ -33,6 +41,38 @@ export default async function Home() {
             imageUrl={featured.imageUrl}
             featured
           />
+        </section>
+      )}
+
+      {/* Latest Videos */}
+      {latestVideos.length > 0 && (
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-gradient-to-b from-red-400 to-red-600 rounded-full" />
+              <h2 className="text-xl font-bold text-gray-100">วิดีโอล่าสุด</h2>
+            </div>
+            <Link
+              href="/videos"
+              className="text-sm text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+            >
+              ดูทั้งหมด
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {latestVideos.map((video) => (
+              <VideoCard
+                key={video.id}
+                videoId={video.videoId}
+                title={video.title}
+                description={video.description}
+                thumbnailUrl={video.thumbnailUrl}
+                channelTitle={video.channelTitle}
+                publishedAt={video.publishedAt.toISOString()}
+              />
+            ))}
+          </div>
         </section>
       )}
 
