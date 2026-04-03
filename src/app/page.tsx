@@ -92,6 +92,9 @@ export default async function Home() {
 
         {/* RIGHT: Sidebar */}
         <aside className="space-y-4">
+          {/* Trading Sessions */}
+          <TradingSessions />
+
           {/* Videos panel */}
           {latestVideos.length > 0 && (
             <div className="border border-gray-700 rounded-sm overflow-hidden">
@@ -121,9 +124,6 @@ export default async function Home() {
               </div>
             </div>
           )}
-
-          {/* Trading Sessions */}
-          <TradingSessions />
 
           {/* Broker CTA */}
           <BrokerCTA />
