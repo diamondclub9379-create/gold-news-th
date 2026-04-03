@@ -9,6 +9,8 @@ interface PriceInfo {
   changePercent: string;
   high: string | null;
   low: string | null;
+  ask?: string | null;
+  spread?: string | null;
 }
 
 interface PairData {
@@ -37,7 +39,7 @@ export default function PriceTicker() {
     }
 
     fetchPrices();
-    const interval = setInterval(fetchPrices, 30000);
+    const interval = setInterval(fetchPrices, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -65,15 +67,15 @@ export default function PriceTicker() {
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          {/* Column headers */}
           <thead>
             <tr className="bg-gray-900/80 border-b border-gray-700/50">
               <th className="text-left px-4 py-2 text-[11px] font-medium text-gray-400 w-36">สินทรัพย์</th>
-              <th className="text-right px-3 py-2 text-[11px] font-medium text-gray-400">ราคา</th>
+              <th className="text-right px-3 py-2 text-[11px] font-medium text-gray-400">Bid</th>
+              <th className="text-right px-3 py-2 text-[11px] font-medium text-gray-400 hidden sm:table-cell">Ask</th>
               <th className="text-right px-3 py-2 text-[11px] font-medium text-gray-400">เปลี่ยนแปลง</th>
               <th className="text-right px-3 py-2 text-[11px] font-medium text-gray-400">%</th>
-              <th className="text-right px-3 py-2 text-[11px] font-medium text-gray-400 hidden sm:table-cell">สูงสุด</th>
-              <th className="text-right px-4 py-2 text-[11px] font-medium text-gray-400 hidden sm:table-cell">ต่ำสุด</th>
+              <th className="text-right px-3 py-2 text-[11px] font-medium text-gray-400 hidden md:table-cell">สูงสุด</th>
+              <th className="text-right px-4 py-2 text-[11px] font-medium text-gray-400 hidden md:table-cell">ต่ำสุด</th>
             </tr>
           </thead>
           <tbody>
@@ -100,12 +102,13 @@ function PriceRow({ pair, isLast }: { pair: PairData; isLast: boolean }) {
             <span className="text-gray-300 font-medium text-[13px]">{label}</span>
           </div>
         </td>
-        <td colSpan={5} className="text-center text-gray-600 text-xs px-3 py-2.5">—</td>
+        <td colSpan={6} className="text-center text-gray-600 text-xs px-3 py-2.5">—</td>
       </tr>
     );
   }
 
   const change = parseFloat(data.change);
+  const hasChange = change !== 0;
   const isUp = change > 0;
   const isDown = change < 0;
 
@@ -124,40 +127,57 @@ function PriceRow({ pair, isLast }: { pair: PairData; isLast: boolean }) {
         </div>
       </td>
 
-      {/* Price */}
+      {/* Bid */}
       <td className="text-right px-3 py-2.5">
         <span className="text-gray-100 font-mono font-semibold text-[14px]">
           {formatPrice(pair.key, data.price)}
         </span>
       </td>
 
+      {/* Ask */}
+      <td className="text-right px-3 py-2.5 hidden sm:table-cell">
+        <span className="text-gray-400 font-mono text-[13px]">
+          {data.ask ? formatPrice(pair.key, data.ask) : "—"}
+        </span>
+      </td>
+
       {/* Change */}
       <td className={`text-right px-3 py-2.5 ${changeBg}`}>
-        <span className={`font-mono text-[13px] font-medium ${changeColor}`}>
-          {arrow} {isUp ? "+" : ""}{data.change}
-        </span>
+        {hasChange ? (
+          <span className={`font-mono text-[13px] font-medium ${changeColor}`}>
+            {arrow} {isUp ? "+" : ""}{data.change}
+          </span>
+        ) : (
+          <span className="text-gray-600 text-[12px]">
+            {data.spread ? `sp: ${data.spread}` : "—"}
+          </span>
+        )}
       </td>
 
       {/* % Change */}
       <td className={`text-right px-3 py-2.5 ${changeBg}`}>
-        <span className={`inline-flex items-center font-mono text-[12px] font-semibold px-1.5 py-0.5 rounded ${
-          isUp ? "bg-green-500/15 text-green-400"
-          : isDown ? "bg-red-500/15 text-red-400"
-          : "text-gray-500"
-        }`}>
-          {isUp ? "+" : ""}{data.changePercent}%
-        </span>
+        {hasChange ? (
+          <span className={`inline-flex items-center font-mono text-[12px] font-semibold px-1.5 py-0.5 rounded ${
+            isUp ? "bg-green-500/15 text-green-400"
+            : isDown ? "bg-red-500/15 text-red-400"
+            : "text-gray-500"
+          }`}>
+            {isUp ? "+" : ""}{data.changePercent}%
+          </span>
+        ) : (
+          <span className="text-gray-600 text-[12px]">—</span>
+        )}
       </td>
 
       {/* High */}
-      <td className="text-right px-3 py-2.5 hidden sm:table-cell">
+      <td className="text-right px-3 py-2.5 hidden md:table-cell">
         <span className="text-gray-400 font-mono text-[12px]">
           {data.high ? formatPrice(pair.key, data.high) : "—"}
         </span>
       </td>
 
       {/* Low */}
-      <td className="text-right px-4 py-2.5 hidden sm:table-cell">
+      <td className="text-right px-4 py-2.5 hidden md:table-cell">
         <span className="text-gray-400 font-mono text-[12px]">
           {data.low ? formatPrice(pair.key, data.low) : "—"}
         </span>
@@ -174,6 +194,5 @@ function formatPrice(key: string, price: string): string {
   if (key === "silver") {
     return "$" + num.toFixed(3);
   }
-  // Forex pairs — no dollar sign
   return num.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 5 });
 }
