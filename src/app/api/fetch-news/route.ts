@@ -79,8 +79,9 @@ async function handleFetchNews(request: NextRequest) {
         // Fetch full article content from source
         const scraped = await scrapeArticle(item.link);
         const articleText = scraped.text || item.summary;
-        const imageUrl = scraped.ogImage || pickStockImage(item.category);
         const finalUrl = scraped.finalUrl || item.link;
+        // Generate unique AI image from article title
+        const imageUrl = scraped.ogImage || generateImageUrl(item.title, item.category);
 
         // Translate full article with Claude
         const translated = await translateWithClaude(item.title, articleText);
@@ -257,26 +258,35 @@ function extractTag(xml: string, tag: string): string {
   return match ? match[1].trim() : "";
 }
 
-// ---- Stock Images ----
+// ---- AI Image Generation via Pollinations.ai (free, no API key) ----
 
-const GOLD_IMAGES = [
-  "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1543699565-003b8adda5fc?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1516245834210-c4c142787335?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1498408040764-ab6eb772a145?w=800&h=450&fit=crop",
-];
-const SILVER_IMAGES = [
-  "https://images.unsplash.com/photo-1592150621744-aca64f48394a?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1574607383476-f517f260d30b?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1605792657660-596af9009e82?w=800&h=450&fit=crop",
-  "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=450&fit=crop",
-];
+function generateImageUrl(title: string, category: string): string {
+  const baseStyle = "photorealistic, professional financial news thumbnail, dark moody background, cinematic lighting, no text no letters no words";
+  const subject = category === "silver"
+    ? "silver bars and silver coins, metallic silver tones"
+    : "gold bars and gold coins, warm golden tones";
 
-function pickStockImage(category: string): string {
-  const pool = category === "silver" ? SILVER_IMAGES : GOLD_IMAGES;
-  return pool[Math.floor(Math.random() * pool.length)];
+  // Create a prompt from the article title
+  const cleanTitle = title
+    .replace(/[^a-zA-Z0-9\s]/g, "")
+    .slice(0, 80);
+
+  const prompt = `${subject}, ${cleanTitle}, ${baseStyle}`;
+  const encoded = encodeURIComponent(prompt);
+
+  // Use a seed based on title hash for consistent images
+  const seed = hashCode(title);
+  return `https://image.pollinations.ai/prompt/${encoded}?width=800&height=450&nologo=true&seed=${seed}`;
+}
+
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return Math.abs(hash);
 }
 
 // ---- Translation ----
