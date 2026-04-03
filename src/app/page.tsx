@@ -4,6 +4,8 @@ import CategoryFilter from "@/components/CategoryFilter";
 import PriceTicker from "@/components/PriceTicker";
 import VideoCard from "@/components/VideoCard";
 import BrokerCTA from "@/components/BrokerCTA";
+import EconomicCalendar from "@/components/EconomicCalendar";
+import TradingSessions from "@/components/TradingSessions";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +29,11 @@ export default async function Home() {
       {/* Price Ticker — full width */}
       <section className="mb-4">
         <PriceTicker />
+      </section>
+
+      {/* Economic Calendar — full width */}
+      <section className="mb-4">
+        <EconomicCalendar />
       </section>
 
       {/* Two-column layout */}
@@ -114,6 +121,9 @@ export default async function Home() {
               </div>
             </div>
           )}
+
+          {/* Trading Sessions */}
+          <TradingSessions />
 
           {/* Broker CTA */}
           <BrokerCTA />
