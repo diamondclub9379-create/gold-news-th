@@ -12,6 +12,30 @@ const RSS_FEEDS = [
     url: "https://www.forexfactory.com/rss",
     defaultSource: "Forex Factory",
   },
+  {
+    url: "https://www.kitco.com/feed/rss/news/gold",
+    defaultSource: "Kitco",
+  },
+  {
+    url: "https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F,SI=F&region=US&lang=en-US",
+    defaultSource: "Yahoo Finance",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=gold+forecast+OR+gold+analysis+OR+XAU+OR+precious+metals+outlook&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "Google News",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:reuters.com+gold+OR+silver+commodities&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "Reuters",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:cnbc.com+gold+price+OR+precious+metals&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "CNBC",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:investing.com+gold+OR+silver+OR+XAU&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "Investing.com",
+  },
 ];
 
 function isAuthorized(request: NextRequest): boolean {
@@ -39,6 +63,21 @@ async function handleFetchNews(request: NextRequest) {
     return Response.json({ error: "CLAUDE_API_KEY not configured" }, { status: 500 });
   }
 
+  // Fire-and-forget: respond immediately, process in background
+  const bgPromise = doFetchNews();
+
+  // Use waitUntil if available (Vercel Edge), otherwise just fire
+  const ctx = (globalThis as Record<string, unknown>);
+  if (typeof ctx.waitUntil === "function") {
+    (ctx.waitUntil as (p: Promise<unknown>) => void)(bgPromise);
+  } else {
+    bgPromise.catch(() => {}); // fire and forget
+  }
+
+  return Response.json({ message: "Fetch started", status: "processing" });
+}
+
+async function doFetchNews() {
   try {
     // 1. Fetch all RSS feeds
     const allItems = [];
@@ -118,10 +157,10 @@ async function handleFetchNews(request: NextRequest) {
       }
     }
 
-    return Response.json({ message: "Done", count: results.length, results });
+    console.log(`[fetch-news] Done: ${results.length} articles processed`);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown";
-    return Response.json({ error: msg }, { status: 500 });
+    console.error(`[fetch-news] Error: ${msg}`);
   }
 }
 
