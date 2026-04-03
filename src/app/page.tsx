@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import ArticleCard from "@/components/ArticleCard";
-import CategoryFilter from "@/components/CategoryFilter";
 import PriceTicker from "@/components/PriceTicker";
 import VideoCard from "@/components/VideoCard";
 import BrokerCTA from "@/components/BrokerCTA";
 import EconomicCalendar from "@/components/EconomicCalendar";
 import TradingSessions from "@/components/TradingSessions";
+import LiveNewsFeed from "@/components/LiveNewsFeed";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +21,17 @@ export default async function Home() {
     }),
   ]);
 
-  const [featured, ...rest] = articles;
+  // Serialize for client component
+  const serializedArticles = articles.map((a) => ({
+    id: a.id,
+    slug: a.slug,
+    titleTh: a.titleTh,
+    summaryTh: a.summaryTh,
+    sourceName: a.sourceName,
+    category: a.category,
+    publishedAt: a.publishedAt.toISOString(),
+    imageUrl: a.imageUrl,
+  }));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4">
@@ -38,57 +47,8 @@ export default async function Home() {
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
-        {/* LEFT: Main content */}
-        <div>
-          {/* Featured Article */}
-          {featured && (
-            <section className="mb-4">
-              <ArticleCard
-                slug={featured.slug}
-                titleTh={featured.titleTh}
-                summaryTh={featured.summaryTh}
-                sourceName={featured.sourceName}
-                category={featured.category}
-                publishedAt={featured.publishedAt.toISOString()}
-                imageUrl={featured.imageUrl}
-                featured
-              />
-            </section>
-          )}
-
-          {/* News section header */}
-          <div className="flex items-center justify-between border-b border-gray-700 pb-2 mb-1">
-            <span className="font-mono text-[11px] uppercase tracking-wider text-gray-400">
-              ข่าวล่าสุด
-            </span>
-            <CategoryFilter />
-          </div>
-
-          {/* News list */}
-          {articles.length === 0 ? (
-            <div className="text-center py-16">
-              <h3 className="font-mono text-sm text-gray-500">ยังไม่มีข่าว</h3>
-              <p className="font-mono text-[11px] text-gray-700 mt-1">
-                ระบบจะดึงข่าวจากต่างประเทศและแปลอัตโนมัติเร็วๆ นี้
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-800/60">
-              {rest.map((article) => (
-                <ArticleCard
-                  key={article.id}
-                  slug={article.slug}
-                  titleTh={article.titleTh}
-                  summaryTh={article.summaryTh}
-                  sourceName={article.sourceName}
-                  category={article.category}
-                  publishedAt={article.publishedAt.toISOString()}
-                  imageUrl={article.imageUrl}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {/* LEFT: Main content — auto-refreshes every 2 min */}
+        <LiveNewsFeed initialArticles={serializedArticles} />
 
         {/* RIGHT: Sidebar */}
         <aside className="space-y-4">
