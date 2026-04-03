@@ -44,7 +44,7 @@ export default function Header() {
               GOLD NEWS TH
             </span>
             <span className="font-mono text-[10px] text-gray-600 hidden sm:inline">
-              สรุปตลาดทอง ก่อนใคร ทุก 5 นาที
+              สรุปตลาดทอง ก่อนใคร
             </span>
           </Link>
           <div className="flex items-center gap-3">

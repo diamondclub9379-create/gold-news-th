@@ -12,11 +12,11 @@ const notoSansThai = Noto_Sans_Thai({
 
 export const metadata: Metadata = {
   title: {
-    default: "Gold News TH - สรุปตลาดทอง ก่อนใคร ทุก 5 นาที",
+    default: "Gold News TH - สรุปตลาดทอง ก่อนใคร",
     template: "%s | Gold News TH",
   },
   description:
-    "สรุปตลาดทอง ก่อนใคร ทุก 5 นาที — ข่าวทองคำและเงินจาก Reuters, Kitco, CNBC แปลไทยอัตโนมัติ",
+    "สรุปตลาดทอง ก่อนใคร — ข่าวทองคำและเงินจาก Reuters, Kitco, CNBC แปลไทยอัตโนมัติ",
   keywords: [
     "ข่าวทองคำ",
     "ราคาทอง",
