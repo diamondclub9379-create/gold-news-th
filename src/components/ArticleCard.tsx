@@ -56,32 +56,44 @@ export default function ArticleCard({
   });
 
   if (featured) {
+    const gradientBg = category === "gold"
+      ? "from-amber-950/40 via-gray-900 to-gray-950"
+      : "from-gray-800/40 via-gray-900 to-gray-950";
+
     return (
       <Link href={`/news/${slug}`} className="block group">
         <article className="border border-gray-700 rounded-sm overflow-hidden bg-gray-950 hover:border-amber-700/50 transition-colors">
-          {imageUrl && (
-            <div className="aspect-[21/9] bg-gray-900 overflow-hidden">
+          {/* Hero image with gradient fallback */}
+          <div className={`relative aspect-[2/1] sm:aspect-[3/1] bg-gradient-to-br ${gradientBg} overflow-hidden`}>
+            {imageUrl && (
               <ArticleImage
                 src={imageUrl}
                 alt={titleTh}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover absolute inset-0"
               />
-            </div>
-          )}
-          <div className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded-sm border uppercase ${categoryColor}`}>
-                {categoryLabel}
+            )}
+            {/* Gradient overlay for readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent" />
+
+            {/* Content overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded-sm border uppercase ${categoryColor}`}>
+                  {categoryLabel}
+                </span>
+                <span className="font-mono text-[10px] text-gray-400">{sourceName}</span>
+                <span className="font-mono text-[10px] text-gray-400 ml-auto">{date} {time}</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-50 group-hover:text-amber-400 transition-colors leading-snug">
+                {titleTh}
+              </h2>
+              <p className="text-sm text-gray-300 mt-2 line-clamp-2 leading-relaxed">
+                {summaryTh}
+              </p>
+              <span className="inline-block mt-3 font-mono text-[11px] text-amber-400 group-hover:text-amber-300">
+                อ่านเพิ่มเติม &rarr;
               </span>
-              <span className="font-mono text-[10px] text-gray-600">{sourceName}</span>
-              <span className="font-mono text-[10px] text-gray-600 ml-auto">{date} {time}</span>
             </div>
-            <h2 className="text-lg font-bold text-gray-100 group-hover:text-amber-400 transition-colors leading-snug">
-              {titleTh}
-            </h2>
-            <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
-              {summaryTh}
-            </p>
           </div>
         </article>
       </Link>
