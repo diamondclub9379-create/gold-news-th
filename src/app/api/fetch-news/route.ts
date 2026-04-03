@@ -36,6 +36,44 @@ const RSS_FEEDS = [
     url: "https://news.google.com/rss/search?q=site:investing.com+gold+OR+silver+OR+XAU&hl=en-US&gl=US&ceid=US:en",
     defaultSource: "Investing.com",
   },
+  // --- International: FXStreet, Mining.com, DailyFX, World Gold Council, BullionVault ---
+  {
+    url: "https://www.fxstreet.com/rss/news",
+    defaultSource: "FXStreet",
+  },
+  {
+    url: "https://www.mining.com/tag/gold/feed/",
+    defaultSource: "Mining.com",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:dailyfx.com+gold+OR+XAU+forecast&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "DailyFX",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=%22World+Gold+Council%22+OR+site:gold.org&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "World Gold Council",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:bullionvault.com+gold+news&hl=en-US&gl=US&ceid=US:en",
+    defaultSource: "BullionVault",
+  },
+  // --- Thai news sources ---
+  {
+    url: "https://www.infoquest.co.th/rss",
+    defaultSource: "InfoQuest",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:thairath.co.th+ราคาทอง+OR+ทองคำ+OR+ตลาดทอง&hl=th&gl=TH&ceid=TH:th",
+    defaultSource: "ไทยรัฐ",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:bangkokbiznews.com+ทองคำ+OR+ราคาทอง+OR+โลหะมีค่า&hl=th&gl=TH&ceid=TH:th",
+    defaultSource: "กรุงเทพธุรกิจ",
+  },
+  {
+    url: "https://news.google.com/rss/search?q=site:prachachat.net+ทองคำ+OR+ราคาทอง+OR+เศรษฐกิจ&hl=th&gl=TH&ceid=TH:th",
+    defaultSource: "ประชาชาติธุรกิจ",
+  },
 ];
 
 function isAuthorized(request: NextRequest): boolean {
@@ -105,7 +143,7 @@ async function doFetchNews() {
     // 3. Filter new items
     const newItems = allItems
       .filter((item) => item.link && !existingUrls.has(item.link))
-      .slice(0, 5);
+      .slice(0, 8);
 
     if (newItems.length === 0) {
       return Response.json({ message: "No new articles", count: 0 });
@@ -122,8 +160,11 @@ async function doFetchNews() {
         // Generate unique AI image from article title
         const imageUrl = scraped.ogImage || generateImageUrl(item.title, item.category);
 
-        // Translate full article with Claude
-        const translated = await translateWithClaude(item.title, articleText);
+        // Check if article is already in Thai (skip translation)
+        const isThai = /[\u0E00-\u0E7F]/.test(item.title);
+        const translated = isThai
+          ? { titleTh: item.title, summaryTh: item.summary, bodyTh: articleText || item.summary }
+          : await translateWithClaude(item.title, articleText);
 
         const slug =
           item.title
