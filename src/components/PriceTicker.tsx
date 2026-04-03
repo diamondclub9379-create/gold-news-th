@@ -52,15 +52,15 @@ export default function PriceTicker() {
   if (pairs.length === 0) return null;
 
   return (
-    <div className="border border-gray-700/50 rounded-xl overflow-hidden">
+    <div className="border border-gray-700 rounded-sm overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-900 to-blue-800 px-4 py-2 flex items-center justify-between">
-        <span className="text-sm font-bold text-white tracking-wide">
+      <div className="bg-gray-800 px-4 py-2 flex items-center justify-between">
+        <span className="font-mono text-[11px] uppercase tracking-wider text-gray-300">
           ตลาดวันนี้
         </span>
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span className="text-[10px] text-blue-200 uppercase tracking-wider">Live</span>
+          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+          <span className="font-mono text-[10px] text-gray-500 uppercase tracking-wider">Live</span>
         </div>
       </div>
 

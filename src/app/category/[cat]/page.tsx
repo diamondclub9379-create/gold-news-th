@@ -39,25 +39,23 @@ export default async function CategoryPage({ params }: Props) {
   const label = validCategories[cat];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-1 h-6 bg-gradient-to-b from-yellow-400 to-amber-600 rounded-full" />
-          <h2 className="text-xl font-bold text-gray-100">ข่าว{label}</h2>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="flex items-center justify-between border-b border-gray-700 pb-2 mb-1">
+        <span className="font-mono text-[11px] uppercase tracking-wider text-gray-400">
+          ข่าว{label}
+        </span>
         <CategoryFilter active={cat} />
       </div>
 
       {articles.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="text-6xl mb-4 opacity-40">📰</div>
-          <h3 className="text-xl text-gray-400">ยังไม่มีข่าว{label}</h3>
-          <p className="text-gray-600 mt-2">
+        <div className="text-center py-16">
+          <h3 className="font-mono text-sm text-gray-500">ยังไม่มีข่าว{label}</h3>
+          <p className="font-mono text-[11px] text-gray-700 mt-1">
             ระบบจะดึงข่าวจากต่างประเทศและแปลอัตโนมัติเร็วๆ นี้
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="divide-y divide-gray-800/60">
           {articles.map((article) => (
             <ArticleCard
               key={article.id}

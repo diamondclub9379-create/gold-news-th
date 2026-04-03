@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" className={`${notoSansThai.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-gray-950 text-gray-100 font-[family-name:var(--font-noto-thai)]">
+      <body className="min-h-full flex flex-col bg-black text-gray-200 font-[family-name:var(--font-noto-thai)]">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

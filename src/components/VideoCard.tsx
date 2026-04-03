@@ -24,16 +24,15 @@ export default function VideoCard({
   const [playing, setPlaying] = useState(false);
 
   const date = new Date(publishedAt).toLocaleDateString("th-TH", {
-    year: "numeric",
-    month: "short",
     day: "numeric",
+    month: "short",
   });
 
   const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   if (featured) {
     return (
-      <article className="relative bg-gradient-to-br from-gray-900 via-gray-900 to-red-950/20 border border-red-700/20 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
+      <article className="border border-gray-700 rounded-sm overflow-hidden bg-gray-950">
         <div className="aspect-video bg-black overflow-hidden relative">
           {playing ? (
             <iframe
@@ -51,11 +50,11 @@ export default function VideoCard({
               <img
                 src={thumbnailUrl}
                 alt={title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 bg-red-600 rounded-sm flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 </div>
@@ -63,33 +62,31 @@ export default function VideoCard({
             </button>
           )}
         </div>
-        <div className="p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-red-500/15 text-red-400 border border-red-500/20 flex items-center gap-1.5">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/></svg>
-              วิดีโอ
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-sm bg-red-500/10 text-red-400 border border-red-500/20 uppercase">
+              VIDEO
             </span>
-            <span className="text-xs text-gray-500">{channelTitle}</span>
-            <span className="text-xs text-gray-600 ml-auto">{date}</span>
+            <span className="font-mono text-[10px] text-gray-600">{channelTitle}</span>
+            <span className="font-mono text-[10px] text-gray-600 ml-auto">{date}</span>
           </div>
           <a href={youtubeUrl} target="_blank" rel="noopener noreferrer">
-            <h2 className="text-2xl font-bold text-gray-50 hover:text-red-400 transition-colors leading-snug">
+            <h2 className="text-lg font-bold text-gray-100 hover:text-amber-400 transition-colors leading-snug">
               {title}
             </h2>
           </a>
           {description && (
-            <p className="text-base text-gray-400 mt-3 line-clamp-2 leading-relaxed">
-              {description}
-            </p>
+            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{description}</p>
           )}
         </div>
       </article>
     );
   }
 
+  // Non-featured: Compact horizontal
   return (
-    <article className="h-full bg-gray-900/80 border border-gray-800/80 rounded-xl overflow-hidden hover:border-red-700/40 hover:bg-gray-900 transition-all duration-200 hover:shadow-lg hover:shadow-red-900/5 group">
-      <div className="aspect-video bg-black overflow-hidden relative">
+    <article className="flex items-start gap-3 p-3 border-b border-gray-800 last:border-b-0 hover:bg-gray-900/50 transition-colors">
+      <div className="w-28 sm:w-36 shrink-0 aspect-video bg-black rounded-sm overflow-hidden relative">
         {playing ? (
           <iframe
             src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
@@ -101,16 +98,16 @@ export default function VideoCard({
         ) : (
           <button
             onClick={() => setPlaying(true)}
-            className="w-full h-full relative cursor-pointer"
+            className="w-full h-full relative cursor-pointer group"
           >
             <img
               src={thumbnailUrl}
               alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-              <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 bg-red-600 rounded-sm flex items-center justify-center">
+                <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
@@ -118,20 +115,16 @@ export default function VideoCard({
           </button>
         )}
       </div>
-      <div className="p-4">
+      <div className="min-w-0 flex-1">
         <a href={youtubeUrl} target="_blank" rel="noopener noreferrer">
-          <h2 className="text-[15px] font-semibold text-gray-100 hover:text-red-400 transition-colors leading-snug line-clamp-2">
+          <h3 className="text-[13px] font-medium text-gray-200 hover:text-amber-400 transition-colors line-clamp-2 leading-snug">
             {title}
-          </h2>
+          </h3>
         </a>
-        {description && (
-          <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">
-            {description}
-          </p>
-        )}
-        <div className="flex items-center gap-2 mt-3">
-          <span className="text-[11px] text-gray-500">{channelTitle}</span>
-          <time className="text-[11px] text-gray-600 ml-auto">{date}</time>
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <span className="font-mono text-[10px] text-gray-600">{channelTitle}</span>
+          <span className="text-gray-700">|</span>
+          <span className="font-mono text-[10px] text-gray-600">{date}</span>
         </div>
       </div>
     </article>
