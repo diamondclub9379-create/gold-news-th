@@ -150,9 +150,17 @@ async function handleFetchNews(request: NextRequest) {
 
         // Check if article is already in Thai (skip translation)
         const isThai = /[\u0E00-\u0E7F]/.test(item.title);
-        const translated = isThai
-          ? { titleTh: item.title, summaryTh: item.summary, bodyTh: articleText || item.summary }
-          : await translateWithClaude(item.title, articleText);
+        let translated: { titleTh: string; summaryTh: string; bodyTh: string };
+        if (isThai) {
+          translated = { titleTh: item.title, summaryTh: item.summary, bodyTh: articleText || item.summary };
+        } else {
+          try {
+            translated = await translateWithClaude(item.title, articleText);
+          } catch {
+            // Fallback: use English if translation API fails
+            translated = { titleTh: item.title, summaryTh: item.summary, bodyTh: articleText || item.summary };
+          }
+        }
 
         const slug =
           item.title
