@@ -105,22 +105,21 @@ async function handleFetchNews(request: NextRequest) {
   }
 
   try {
-    // 1. Fetch all RSS feeds
-    const allItems = [];
-    for (const feed of RSS_FEEDS) {
-      try {
+    // 1. Fetch all RSS feeds in parallel (with 8s timeout each)
+    const feedResults = await Promise.allSettled(
+      RSS_FEEDS.map(async (feed) => {
         const rssRes = await fetch(feed.url, {
           headers: { "User-Agent": "GoldNewsTH/1.0" },
+          signal: AbortSignal.timeout(8000),
         });
-        if (rssRes.ok) {
-          const rssText = await rssRes.text();
-          const items = parseRSS(rssText, feed.defaultSource);
-          allItems.push(...items);
-        }
-      } catch {
-        // Skip failed feeds silently
-      }
-    }
+        if (!rssRes.ok) return [];
+        const rssText = await rssRes.text();
+        return parseRSS(rssText, feed.defaultSource);
+      })
+    );
+    const allItems = feedResults
+      .filter((r) => r.status === "fulfilled")
+      .flatMap((r) => (r as PromiseFulfilledResult<typeof allItems>).value);
 
     // 2. Get existing source URLs to deduplicate
     const existing = await prisma.article.findMany({
