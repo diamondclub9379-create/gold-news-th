@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 const RSS_FEEDS = [
   {
@@ -100,8 +100,8 @@ async function handleFetchNews(request: NextRequest) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!CLAUDE_API_KEY) {
-    return Response.json({ error: "CLAUDE_API_KEY not configured" }, { status: 500 });
+  if (!OPENROUTER_API_KEY) {
+    return Response.json({ error: "OPENROUTER_API_KEY not configured" }, { status: 500 });
   }
 
   try {
@@ -377,16 +377,14 @@ async function translateWithClaude(
   titleEn: string,
   articleText: string
 ): Promise<{ titleTh: string; summaryTh: string; bodyTh: string }> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
-      "x-api-key": CLAUDE_API_KEY!,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
+      "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4000,
+      model: "google/gemini-2.0-flash-001",
       messages: [
         {
           role: "user",
@@ -410,12 +408,12 @@ Reply ONLY with valid JSON, no markdown:
   });
 
   if (!res.ok) {
-    throw new Error(`Claude API error: ${res.status}`);
+    throw new Error(`OpenRouter API error: ${res.status}`);
   }
 
   const data = await res.json();
-  const text = data.content[0].text;
+  const text = data.choices?.[0]?.message?.content || "";
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("No JSON in Claude response");
+  if (!jsonMatch) throw new Error("No JSON in response");
   return JSON.parse(jsonMatch[0]);
 }
