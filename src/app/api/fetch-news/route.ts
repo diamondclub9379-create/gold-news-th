@@ -141,7 +141,7 @@ async function handleFetchNews(request: NextRequest) {
     const results = [];
     let saved = 0;
     for (const item of candidates) {
-      if (saved >= 3) break;
+      if (saved >= 2) break;
       try {
         // Fetch full article content from source
         const scraped = await scrapeArticle(item.link);
@@ -224,7 +224,7 @@ async function scrapeArticle(url: string): Promise<ScrapedArticle> {
         Accept: "text/html,application/xhtml+xml",
       },
       redirect: "follow",
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!res.ok) return { text: "", ogImage: null, finalUrl: url };
