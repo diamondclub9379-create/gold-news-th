@@ -117,9 +117,10 @@ async function handleFetchNews(request: NextRequest) {
         return parseRSS(rssText, feed.defaultSource);
       })
     );
-    const allItems = feedResults
+    type RSSItem = { title: string; link: string; summary: string; sourceName: string; category: string; publishedAt: string };
+    const allItems: RSSItem[] = feedResults
       .filter((r) => r.status === "fulfilled")
-      .flatMap((r) => (r as PromiseFulfilledResult<typeof allItems>).value);
+      .flatMap((r) => (r as PromiseFulfilledResult<RSSItem[]>).value);
 
     // 2. Get existing source URLs to deduplicate
     const existing = await prisma.article.findMany({
