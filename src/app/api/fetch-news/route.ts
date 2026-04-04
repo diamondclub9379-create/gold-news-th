@@ -92,6 +92,9 @@ export async function POST(request: NextRequest) {
   return handleFetchNews(request);
 }
 
+// Vercel Serverless: max 60s on Hobby plan
+export const maxDuration = 60;
+
 async function handleFetchNews(request: NextRequest) {
   if (!isAuthorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -101,21 +104,6 @@ async function handleFetchNews(request: NextRequest) {
     return Response.json({ error: "CLAUDE_API_KEY not configured" }, { status: 500 });
   }
 
-  // Fire-and-forget: respond immediately, process in background
-  const bgPromise = doFetchNews();
-
-  // Use waitUntil if available (Vercel Edge), otherwise just fire
-  const ctx = (globalThis as Record<string, unknown>);
-  if (typeof ctx.waitUntil === "function") {
-    (ctx.waitUntil as (p: Promise<unknown>) => void)(bgPromise);
-  } else {
-    bgPromise.catch(() => {}); // fire and forget
-  }
-
-  return Response.json({ message: "Fetch started", status: "processing" });
-}
-
-async function doFetchNews() {
   try {
     // 1. Fetch all RSS feeds
     const allItems = [];
@@ -143,7 +131,7 @@ async function doFetchNews() {
     // 3. Filter new items
     const newItems = allItems
       .filter((item) => item.link && !existingUrls.has(item.link))
-      .slice(0, 8);
+      .slice(0, 3);
 
     if (newItems.length === 0) {
       return Response.json({ message: "No new articles", count: 0 });
@@ -198,10 +186,10 @@ async function doFetchNews() {
       }
     }
 
-    console.log(`[fetch-news] Done: ${results.length} articles processed`);
+    return Response.json({ message: "Done", count: results.length, results });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown";
-    console.error(`[fetch-news] Error: ${msg}`);
+    return Response.json({ error: msg }, { status: 500 });
   }
 }
 
