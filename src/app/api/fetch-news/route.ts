@@ -128,18 +128,20 @@ async function handleFetchNews(request: NextRequest) {
     });
     const existingUrls = new Set(existing.map((a) => a.sourceUrl));
 
-    // 3. Filter new items
-    const newItems = allItems
+    // 3. Filter new items (take more candidates, process until we get 3 new ones)
+    const candidates = allItems
       .filter((item) => item.link && !existingUrls.has(item.link))
-      .slice(0, 3);
+      .slice(0, 15);
 
-    if (newItems.length === 0) {
+    if (candidates.length === 0) {
       return Response.json({ message: "No new articles", count: 0 });
     }
 
-    // 4. Fetch full article, translate, and save
+    // 4. Fetch full article, translate, and save (stop after 3 successful)
     const results = [];
-    for (const item of newItems) {
+    let saved = 0;
+    for (const item of candidates) {
+      if (saved >= 3) break;
       try {
         // Fetch full article content from source
         const scraped = await scrapeArticle(item.link);
@@ -188,8 +190,12 @@ async function handleFetchNews(request: NextRequest) {
         });
 
         results.push({ status: "ok", title: item.title.slice(0, 60), id: article.id });
+        saved++;
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Unknown";
+        if (msg.includes("UNIQUE constraint") || msg.includes("Unique constraint")) {
+          continue; // Skip duplicates silently
+        }
         results.push({ status: "error", title: item.title.slice(0, 60), error: msg });
       }
     }
