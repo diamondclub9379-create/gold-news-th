@@ -143,24 +143,20 @@ async function handleFetchNews(request: NextRequest) {
     for (const item of candidates) {
       if (saved >= 2) break;
       try {
-        // Fetch full article content from source
-        const scraped = await scrapeArticle(item.link);
-        const articleText = scraped.text || item.summary;
-        const finalUrl = scraped.finalUrl || item.link;
-        // Generate unique AI image from article title
-        const imageUrl = scraped.ogImage || generateImageUrl(item.title, item.category);
+        // Skip scraping (too slow) — use RSS data directly
+        const finalUrl = item.link;
+        const imageUrl = generateImageUrl(item.title, item.category);
 
         // Check if article is already in Thai (skip translation)
         const isThai = /[\u0E00-\u0E7F]/.test(item.title);
         let translated: { titleTh: string; summaryTh: string; bodyTh: string };
         if (isThai) {
-          translated = { titleTh: item.title, summaryTh: item.summary, bodyTh: articleText || item.summary };
+          translated = { titleTh: item.title, summaryTh: item.summary, bodyTh: item.summary };
         } else {
           try {
-            translated = await translateWithClaude(item.title, articleText);
+            translated = await translateWithClaude(item.title, item.summary);
           } catch {
-            // Fallback: use English if translation API fails
-            translated = { titleTh: item.title, summaryTh: item.summary, bodyTh: articleText || item.summary };
+            translated = { titleTh: item.title, summaryTh: item.summary, bodyTh: item.summary };
           }
         }
 
