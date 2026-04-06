@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Thai } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -34,6 +35,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" className={`${notoSansThai.variable} h-full antialiased`}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-E8NSELPNG5"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-E8NSELPNG5');
+          `}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col bg-black text-gray-200 font-[family-name:var(--font-noto-thai)]">
         <Header />
         <main className="flex-1">{children}</main>
