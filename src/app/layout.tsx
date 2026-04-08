@@ -48,6 +48,12 @@ export default function RootLayout({
             gtag('config', 'G-E8NSELPNG5');
           `}
         </Script>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9198733033330754"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </head>
       <body className="min-h-full flex flex-col bg-black text-gray-200 font-[family-name:var(--font-noto-thai)]">
         <Header />

@@ -12,6 +12,7 @@ export default function Footer() {
           <Link href="/category/gold" className="hover:text-gray-400 transition-colors">ทองคำ</Link>
           <Link href="/category/silver" className="hover:text-gray-400 transition-colors">เงิน</Link>
           <Link href="/videos" className="hover:text-gray-400 transition-colors">วิดีโอ</Link>
+          <Link href="/privacy" className="hover:text-gray-400 transition-colors">นโยบายความเป็นส่วนตัว</Link>
         </nav>
         <span className="font-mono text-[10px] text-gray-700 hidden sm:inline">
           ข่าวแปลโดย AI เพื่อการศึกษาเท่านั้น
