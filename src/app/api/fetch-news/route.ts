@@ -155,8 +155,12 @@ async function handleFetchNews(request: NextRequest) {
         } else {
           try {
             translated = await translateWithClaude(item.title, item.summary);
+            // Validate: ต้องมีอักษรไทยจริง
+            if (!/[\u0E00-\u0E7F]/.test(translated.titleTh)) {
+              throw new Error("Translation has no Thai characters");
+            }
           } catch {
-            translated = { titleTh: item.title, summaryTh: item.summary, bodyTh: item.summary };
+            continue; // Skip this article, try next candidate
           }
         }
 
@@ -288,6 +292,21 @@ function extractArticleText(html: string): string {
   return text.slice(0, 3000);
 }
 
+// ---- HTML Stripping ----
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // ---- RSS Parsing ----
 
 function parseRSS(xml: string, defaultSource: string) {
@@ -321,7 +340,7 @@ function parseRSS(xml: string, defaultSource: string) {
     items.push({
       title: cleanTitle,
       link,
-      summary: (description || cleanTitle).slice(0, 500),
+      summary: stripHtml(description || cleanTitle).slice(0, 500),
       sourceName,
       category,
       publishedAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
