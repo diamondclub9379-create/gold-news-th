@@ -110,8 +110,18 @@ export default async function NewsPage({ params }: Props) {
 
       <BrokerCTA />
 
+      {/* AI Translation Notice */}
+      <div className="mt-8 bg-blue-500/5 border border-blue-500/20 rounded-lg p-3">
+        <p className="font-mono text-[10px] text-blue-400 mb-1 uppercase tracking-wider">แปลโดย AI</p>
+        <p className="text-[11px] text-gray-500 leading-relaxed">
+          บทความนี้แปลจากแหล่งข่าวต่างประเทศโดยใช้เทคโนโลยี AI อาจมีความคลาดเคลื่อนจากต้นฉบับ
+          กรุณาอ้างอิงข่าวต้นฉบับเพื่อความถูกต้อง เนื้อหานี้มีวัตถุประสงค์เพื่อการให้ข้อมูลเท่านั้น
+          ไม่ใช่คำแนะนำในการลงทุน
+        </p>
+      </div>
+
       {/* Source */}
-      <div className="mt-10 pt-6 border-t border-gray-800/60">
+      <div className="mt-6 pt-6 border-t border-gray-800/60">
         <p className="text-sm text-gray-500 mb-2">
           หัวข้อต้นฉบับ:{" "}
           <span className="text-gray-400 italic">{article.titleEn}</span>

@@ -107,7 +107,37 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-gray-100 mb-2">9. การเปลี่ยนแปลงนโยบาย</h2>
+          <h2 className="text-lg font-semibold text-gray-100 mb-2">9. การเก็บรักษาข้อมูล</h2>
+          <p>
+            เราจะเก็บรักษาข้อมูลส่วนบุคคลของท่านเท่าที่จำเป็นสำหรับวัตถุประสงค์ที่ระบุไว้
+            ข้อมูล Analytics จะถูกเก็บรักษาเป็นระยะเวลา 14 เดือนตามค่าเริ่มต้นของ Google Analytics
+            หลังจากนั้นข้อมูลจะถูกลบโดยอัตโนมัติ
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-gray-100 mb-2">10. การปฏิบัติตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA)</h2>
+          <p>
+            เว็บไซต์นี้ปฏิบัติตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA)
+            ท่านสามารถใช้สิทธิ์ตาม PDPA ได้โดยส่งคำขอไปที่{" "}
+            <a href="mailto:privacy@goldnewsth.com" className="text-yellow-400 underline">
+              privacy@goldnewsth.com
+            </a>{" "}
+            เราจะดำเนินการตามคำขอภายใน 30 วันนับจากวันที่ได้รับคำขอ
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-gray-100 mb-2">11. การแจ้งเตือนเมื่อข้อมูลรั่วไหล</h2>
+          <p>
+            ในกรณีที่เกิดเหตุการณ์ข้อมูลรั่วไหลที่อาจกระทบต่อสิทธิ์ของท่าน
+            เราจะแจ้งให้ท่านทราบและแจ้งต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล
+            ภายใน 72 ชั่วโมงนับจากที่ทราบเหตุ
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-gray-100 mb-2">12. การเปลี่ยนแปลงนโยบาย</h2>
           <p>
             เราอาจปรับปรุงนโยบายความเป็นส่วนตัวนี้เป็นครั้งคราว
             การเปลี่ยนแปลงใดๆ จะถูกเผยแพร่บนหน้านี้
@@ -115,11 +145,22 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-gray-100 mb-2">10. ติดต่อเรา</h2>
+          <h2 className="text-lg font-semibold text-gray-100 mb-2">13. ติดต่อเรา</h2>
           <p>
-            หากท่านมีคำถามเกี่ยวกับนโยบายความเป็นส่วนตัว
-            สามารถติดต่อเราได้ผ่านทางเว็บไซต์ goldnewsth.com
+            หากท่านมีคำถามเกี่ยวกับนโยบายความเป็นส่วนตัว สามารถติดต่อเราได้ที่:
           </p>
+          <ul className="list-disc list-inside mt-2 space-y-1 text-gray-400">
+            <li>อีเมลทั่วไป:{" "}
+              <a href="mailto:contact@goldnewsth.com" className="text-yellow-400 underline">
+                contact@goldnewsth.com
+              </a>
+            </li>
+            <li>ขอใช้สิทธิ์ข้อมูลส่วนบุคคล:{" "}
+              <a href="mailto:privacy@goldnewsth.com" className="text-yellow-400 underline">
+                privacy@goldnewsth.com
+              </a>
+            </li>
+          </ul>
         </section>
 
         <p className="text-gray-500 text-xs pt-4 border-t border-gray-800">
